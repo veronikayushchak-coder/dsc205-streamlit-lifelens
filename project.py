@@ -11,11 +11,23 @@ st.set_page_config(
 )
 
 
-# Data URL
+# Data URLs
 LIFE_URL = (
     "https://raw.githubusercontent.com/"
     "veronikayushchak-coder/dsc205-streamlit-lifelens/"
     "main/life-expectancy.csv"
+)
+
+GDP_URL = (
+    "https://raw.githubusercontent.com/"
+    "veronikayushchak-coder/dsc205-streamlit-lifelens/"
+    "main/life-expectancy-vs-gdp-per-capita.csv"
+)
+
+HEALTH_URL = (
+    "https://raw.githubusercontent.com/"
+    "veronikayushchak-coder/dsc205-streamlit-lifelens/"
+    "main/life-expectancy-vs-health-expenditure.csv"
 )
 
 
@@ -24,11 +36,13 @@ LIFE_URL = (
 def load_data():
 
     life = pd.read_csv(LIFE_URL)
+    gdp = pd.read_csv(GDP_URL)
+    health = pd.read_csv(HEALTH_URL)
 
-    return life
+    return life, gdp, health
 
 
-df = load_data()
+df, gdp_df, health_df = load_data()
 
 
 # Clean data
@@ -36,6 +50,20 @@ df = df.rename(
     columns={
         "Entity": "Country",
         "Life expectancy": "Life Expectancy"
+    }
+)
+
+gdp_df = gdp_df.rename(
+    columns={
+        "Entity": "Country"
+    }
+)
+
+health_df = health_df.rename(
+    columns={
+        "Entity": "Country",
+        "Health expenditure per capita":
+            "Health Expenditure"
     }
 )
 
@@ -500,7 +528,116 @@ elif page == "⚖️ Compare Countries":
     st.title("⚖️ Compare Countries")
 
     st.write(
-        "Compare life expectancy between countries."
+        "Compare life expectancy between three countries."
+    )
+
+
+    # Select year
+    selected_year = st.selectbox(
+        "Select Year",
+        years,
+        index=len(years) - 1
+    )
+
+
+    # Get data for selected year
+    comparison_data = df[
+        df["Year"] == selected_year
+    ].dropna(
+        subset=[
+            "Country",
+            "Life Expectancy"
+        ]
+    )
+
+
+    available_countries = sorted(
+        comparison_data["Country"].unique()
+    )
+
+
+    # Select countries
+    col1, col2, col3 = st.columns(3)
+
+
+    with col1:
+
+        country1 = st.selectbox(
+            "Country 1",
+            available_countries,
+            index=0
+        )
+
+
+    with col2:
+
+        country2_options = [
+            country for country in available_countries
+            if country != country1
+        ]
+
+        country2 = st.selectbox(
+            "Country 2",
+            country2_options
+        )
+
+
+    with col3:
+
+        country3_options = [
+            country for country in available_countries
+            if country not in [
+                country1,
+                country2
+            ]
+        ]
+
+        country3 = st.selectbox(
+            "Country 3",
+            country3_options
+        )
+
+
+    selected_countries = [
+        country1,
+        country2,
+        country3
+    ]
+
+
+    selected_data = comparison_data[
+        comparison_data["Country"].isin(
+            selected_countries
+        )
+    ]
+
+
+    # Create comparison chart
+    fig_compare = px.bar(
+        selected_data,
+        x="Country",
+        y="Life Expectancy",
+        text="Life Expectancy",
+        labels={
+            "Life Expectancy":
+                "Life Expectancy (years)"
+        },
+        title=(
+            f"Life Expectancy Comparison — "
+            f"{selected_year}"
+        )
+    )
+
+
+    fig_compare.update_traces(
+        texttemplate="%{text:.1f}",
+        textposition="outside"
+    )
+
+
+    st.plotly_chart(
+        fig_compare,
+        use_container_width=True
     )
 
 
