@@ -81,6 +81,7 @@ for column in gdp_df.columns:
         break
 
 
+# Basic information
 countries = sorted(
     df["Country"].dropna().unique()
 )
@@ -110,8 +111,17 @@ page = st.sidebar.radio(
     ]
 )
 
+st.sidebar.divider()
 
-# Home page
+st.sidebar.caption(
+    "Data source: Our World in Data"
+)
+
+
+# =========================================================
+# HOME
+# =========================================================
+
 if page == "🏠 Home":
 
     latest_year = int(years[-1])
@@ -141,30 +151,41 @@ if page == "🏠 Home":
     )
 
     st.write(
-        "Explore life expectancy around the world."
+        """
+        Explore how life expectancy has changed around
+        the world and investigate how it relates to
+        economic and healthcare factors.
+        """
     )
 
+    st.divider()
+
+    # Quick statistics
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
+
         st.metric(
             "Countries",
             len(countries)
         )
 
     with col2:
+
         st.metric(
             "Latest Year",
             latest_year
         )
 
     with col3:
+
         st.metric(
             "Global Average",
             f"{average_latest:.1f} years"
         )
 
     with col4:
+
         st.metric(
             "Years of Data",
             f"{int(years[-1] - years[0])}+"
@@ -172,31 +193,39 @@ if page == "🏠 Home":
 
     st.divider()
 
-    st.subheader(
+    # Highest and lowest
+    st.header(
         f"🌍 The World in {latest_year}"
     )
 
     col1, col2 = st.columns(2)
 
     with col1:
+
+        st.subheader(
+            "🏆 Highest Life Expectancy"
+        )
+
         st.metric(
-            "🏆 Highest Life Expectancy",
-            f"{highest_latest['Life Expectancy']:.1f} years",
-            highest_latest["Country"]
+            highest_latest["Country"],
+            f"{highest_latest['Life Expectancy']:.1f} years"
         )
 
     with col2:
+
+        st.subheader(
+            "📉 Lowest Life Expectancy"
+        )
+
         st.metric(
-            "📉 Lowest Life Expectancy",
-            f"{lowest_latest['Life Expectancy']:.1f} years",
-            lowest_latest["Country"]
+            lowest_latest["Country"],
+            f"{lowest_latest['Life Expectancy']:.1f} years"
         )
 
     st.divider()
 
-    st.subheader(
-        f"🏆 Top 10 Countries in {latest_year}"
-    )
+    # Top 10
+    st.header("🏆 Top 10 Countries")
 
     top10 = latest_data.sort_values(
         "Life Expectancy",
@@ -204,7 +233,9 @@ if page == "🏠 Home":
     ).head(10)
 
     fig = px.bar(
-        top10.sort_values("Life Expectancy"),
+        top10.sort_values(
+            "Life Expectancy"
+        ),
         x="Life Expectancy",
         y="Country",
         orientation="h",
@@ -219,8 +250,16 @@ if page == "🏠 Home":
         use_container_width=True
     )
 
+    st.info(
+        "Use the navigation menu to explore the world, "
+        "individual countries, comparisons, and relationships."
+    )
 
-# Explore the World
+
+# =========================================================
+# EXPLORE THE WORLD
+# =========================================================
+
 elif page == "🗺️ Explore the World":
 
     st.title("🗺️ Explore the World")
@@ -229,12 +268,14 @@ elif page == "🗺️ Explore the World":
         "See how life expectancy differs around the world."
     )
 
+    # Select year
     selected_year = st.select_slider(
         "Select Year",
         options=years,
         value=years[-1]
     )
 
+    # Get map data
     map_data = df[
         df["Year"] == selected_year
     ].dropna(
@@ -243,8 +284,9 @@ elif page == "🗺️ Explore the World":
             "Life Expectancy",
             "Code"
         ]
-    )
+    ).copy()
 
+    # Create map
     fig_map = px.choropleth(
         map_data,
         locations="Code",
@@ -273,6 +315,7 @@ elif page == "🗺️ Explore the World":
         use_container_width=True
     )
 
+    # Statistics
     highest = map_data.loc[
         map_data["Life Expectancy"].idxmax()
     ]
@@ -288,12 +331,14 @@ elif page == "🗺️ Explore the World":
     col1, col2, col3 = st.columns(3)
 
     with col1:
+
         st.metric(
             "Global Average",
             f"{average:.1f} years"
         )
 
     with col2:
+
         st.metric(
             "Highest",
             f"{highest['Life Expectancy']:.1f} years"
@@ -304,6 +349,7 @@ elif page == "🗺️ Explore the World":
         )
 
     with col3:
+
         st.metric(
             "Lowest",
             f"{lowest['Life Expectancy']:.1f} years"
@@ -313,8 +359,55 @@ elif page == "🗺️ Explore the World":
             lowest["Country"]
         )
 
+    st.divider()
 
-# Country Explorer
+    # Ranking
+    ranking_choice = st.radio(
+        "Ranking",
+        [
+            "Highest",
+            "Lowest"
+        ],
+        horizontal=True
+    )
+
+    if ranking_choice == "Highest":
+
+        ranking = map_data.sort_values(
+            "Life Expectancy",
+            ascending=False
+        ).head(10)
+
+    else:
+
+        ranking = map_data.sort_values(
+            "Life Expectancy",
+            ascending=True
+        ).head(10)
+
+    fig_rank = px.bar(
+        ranking.sort_values(
+            "Life Expectancy"
+        ),
+        x="Life Expectancy",
+        y="Country",
+        orientation="h",
+        labels={
+            "Life Expectancy":
+                "Life Expectancy (years)"
+        }
+    )
+
+    st.plotly_chart(
+        fig_rank,
+        use_container_width=True
+    )
+
+
+# =========================================================
+# COUNTRY EXPLORER
+# =========================================================
+
 elif page == "🔎 Country Explorer":
 
     st.title("🔎 Country Explorer")
@@ -323,6 +416,7 @@ elif page == "🔎 Country Explorer":
         "Select a country and explore its life expectancy history."
     )
 
+    # Select country
     selected_country = st.selectbox(
         "Select Country",
         countries
@@ -358,7 +452,7 @@ elif page == "🔎 Country Explorer":
 
         change = latest - first
 
-        # Country statistics
+        # Snapshot
         st.subheader(
             f"📊 {selected_country} Snapshot"
         )
@@ -366,30 +460,35 @@ elif page == "🔎 Country Explorer":
         col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
+
             st.metric(
                 "First",
                 f"{first:.1f}"
             )
 
         with col2:
+
             st.metric(
                 "Latest",
                 f"{latest:.1f}"
             )
 
         with col3:
+
             st.metric(
                 "Change",
                 f"{change:+.1f}"
             )
 
         with col4:
+
             st.metric(
                 "Average",
                 f"{average:.1f}"
             )
 
         with col5:
+
             st.metric(
                 "Highest",
                 f"{highest:.1f}"
@@ -397,7 +496,7 @@ elif page == "🔎 Country Explorer":
 
         st.divider()
 
-        # Select time period
+        # Time period
         st.subheader(
             "📈 Life Expectancy Over Time"
         )
@@ -460,7 +559,7 @@ elif page == "🔎 Country Explorer":
 
         st.divider()
 
-        # Highest and lowest
+        # Highest and lowest years
         highest_row = country_data.loc[
             country_data["Life Expectancy"].idxmax()
         ]
@@ -472,6 +571,7 @@ elif page == "🔎 Country Explorer":
         col1, col2 = st.columns(2)
 
         with col1:
+
             st.info(
                 f"🏆 Highest: "
                 f"{highest_row['Life Expectancy']:.1f} "
@@ -480,6 +580,7 @@ elif page == "🔎 Country Explorer":
             )
 
         with col2:
+
             st.info(
                 f"📉 Lowest: "
                 f"{lowest_row['Life Expectancy']:.1f} "
@@ -489,7 +590,7 @@ elif page == "🔎 Country Explorer":
 
         st.divider()
 
-        # Data table
+        # Country data
         st.subheader(
             "📋 Country Data"
         )
@@ -513,7 +614,10 @@ elif page == "🔎 Country Explorer":
         )
 
 
-# Compare Countries
+# =========================================================
+# COMPARE COUNTRIES
+# =========================================================
+
 elif page == "⚖️ Compare Countries":
 
     st.title("⚖️ Compare Countries")
@@ -522,6 +626,7 @@ elif page == "⚖️ Compare Countries":
         "Compare different indicators between three countries."
     )
 
+    # Select variable
     comparison = st.radio(
         "What would you like to compare?",
         [
@@ -532,29 +637,34 @@ elif page == "⚖️ Compare Countries":
         horizontal=True
     )
 
+    # Select dataset
     if comparison == "Life Expectancy":
 
         comparison_df = df.copy()
+
         value_column = "Life Expectancy"
 
     elif comparison == "Health Spending":
 
         comparison_df = health_df.copy()
+
         value_column = "Health Expenditure"
 
     else:
 
         comparison_df = gdp_df.copy()
+
         value_column = gdp_column
 
     if value_column is None:
 
         st.error(
-            "The selected data could not be found."
+            "The selected variable could not be found."
         )
 
         st.stop()
 
+    # Available years
     available_years = sorted(
         comparison_df[
             comparison_df[value_column].notna()
@@ -577,6 +687,7 @@ elif page == "⚖️ Compare Countries":
         index=len(available_years) - 1
     )
 
+    # Data for selected year
     comparison_data = comparison_df[
         comparison_df["Year"] == selected_year
     ].dropna(
@@ -599,6 +710,7 @@ elif page == "⚖️ Compare Countries":
 
         st.stop()
 
+    # Select countries
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -649,12 +761,14 @@ elif page == "⚖️ Compare Countries":
         country3
     ]
 
+    # Get selected data
     selected_data = comparison_data[
         comparison_data["Country"].isin(
             selected_countries
         )
     ].copy()
 
+    # Keep Country 1, 2, 3 order
     selected_data["Country"] = pd.Categorical(
         selected_data["Country"],
         categories=selected_countries,
@@ -665,6 +779,7 @@ elif page == "⚖️ Compare Countries":
         "Country"
     )
 
+    # Visualization
     visualization = st.radio(
         "Choose visualization",
         [
@@ -733,16 +848,23 @@ elif page == "⚖️ Compare Countries":
     )
 
 
-# Relationships
+# =========================================================
+# RELATIONSHIPS
+# =========================================================
+
 elif page == "🔬 Relationships":
 
     st.title("🔬 Relationships")
 
     st.write(
-        "Explore how economic and healthcare factors "
-        "may relate to life expectancy."
+        """
+        Investigate whether countries with higher GDP
+        or greater health spending tend to have higher
+        life expectancy.
+        """
     )
 
+    # Select factor
     factor = st.radio(
         "Choose a factor",
         [
@@ -752,6 +874,7 @@ elif page == "🔬 Relationships":
         horizontal=True
     )
 
+    # GDP
     if factor == "GDP per Capita":
 
         relationship_years = sorted(
@@ -777,12 +900,38 @@ elif page == "🔬 Relationships":
 
         x_label = "GDP per Capita"
 
+    # Health spending
     else:
 
+        health_data = health_df[
+            health_df["Health Expenditure"].notna()
+        ][
+            [
+                "Country",
+                "Year"
+            ]
+        ]
+
+        life_data_years = df[
+            df["Life Expectancy"].notna()
+        ][
+            [
+                "Country",
+                "Year"
+            ]
+        ]
+
+        valid_health_years = health_data.merge(
+            life_data_years,
+            on=[
+                "Country",
+                "Year"
+            ],
+            how="inner"
+        )
+
         relationship_years = sorted(
-            health_df[
-                health_df["Health Expenditure"].notna()
-            ]["Year"]
+            valid_health_years["Year"]
             .dropna()
             .unique()
         )
@@ -802,6 +951,7 @@ elif page == "🔬 Relationships":
 
         x_label = "Health Spending per Capita"
 
+    # Life expectancy data
     life_data = df[
         df["Year"] == selected_year
     ][
@@ -812,6 +962,7 @@ elif page == "🔬 Relationships":
         ]
     ]
 
+    # Combine data
     relationship_data = factor_data.merge(
         life_data,
         on=[
@@ -821,6 +972,7 @@ elif page == "🔬 Relationships":
         how="inner"
     )
 
+    # Remove missing values
     relationship_data = relationship_data.dropna(
         subset=[
             factor_column,
@@ -828,6 +980,7 @@ elif page == "🔬 Relationships":
         ]
     )
 
+    # Scatterplot
     fig_relationship = px.scatter(
         relationship_data,
         x=factor_column,
@@ -850,6 +1003,7 @@ elif page == "🔬 Relationships":
         use_container_width=True
     )
 
+    # Correlation
     if len(relationship_data) >= 2:
 
         correlation = relationship_data[
@@ -891,3 +1045,11 @@ elif page == "🔬 Relationships":
         st.caption(
             "Correlation shows association, not causation."
         )
+
+
+# Footer
+st.sidebar.divider()
+
+st.sidebar.caption(
+    "LifeLens | DSC 205"
+)
