@@ -212,6 +212,108 @@ elif page == "🗺️ Explore the World":
     )
 
 
+    # Select year
+    selected_year = st.select_slider(
+        "Select Year",
+        options=years,
+        value=years[-1]
+    )
+
+
+    # Get data for selected year
+    map_data = df[
+        df["Year"] == selected_year
+    ].dropna(
+        subset=[
+            "Country",
+            "Life Expectancy",
+            "Code"
+        ]
+    )
+
+
+    # Create map
+    fig_map = px.choropleth(
+        map_data,
+        locations="Code",
+        color="Life Expectancy",
+        hover_name="Country",
+        color_continuous_scale="YlGnBu",
+        projection="natural earth",
+        labels={
+            "Life Expectancy":
+                "Life Expectancy (years)"
+        },
+        title=f"Life Expectancy — {selected_year}"
+    )
+
+
+    fig_map.update_layout(
+        margin=dict(
+            l=0,
+            r=0,
+            t=60,
+            b=0
+        )
+    )
+
+
+    st.plotly_chart(
+        fig_map,
+        use_container_width=True
+    )
+
+
+    # Calculate statistics
+    highest = map_data.loc[
+        map_data["Life Expectancy"].idxmax()
+    ]
+
+    lowest = map_data.loc[
+        map_data["Life Expectancy"].idxmin()
+    ]
+
+    average = map_data[
+        "Life Expectancy"
+    ].mean()
+
+
+    # Show statistics
+    col1, col2, col3 = st.columns(3)
+
+
+    with col1:
+
+        st.metric(
+            "Global Average",
+            f"{average:.1f} years"
+        )
+
+
+    with col2:
+
+        st.metric(
+            "Highest",
+            f"{highest['Life Expectancy']:.1f} years"
+        )
+
+        st.caption(
+            highest["Country"]
+        )
+
+
+    with col3:
+
+        st.metric(
+            "Lowest",
+            f"{lowest['Life Expectancy']:.1f} years"
+        )
+
+        st.caption(
+            lowest["Country"]
+        )
+
+
 # Country Explorer
 elif page == "🔎 Country Explorer":
 
