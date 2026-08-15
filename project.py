@@ -625,6 +625,9 @@ elif page == "⚖️ Compare Countries":
         x="Country",
         y="Life Expectancy",
         text="Life Expectancy",
+        category_orders={
+            "Country": selected_countries
+        },
         labels={
             "Life Expectancy":
                 "Life Expectancy (years)"
