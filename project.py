@@ -68,6 +68,19 @@ health_df = health_df.rename(
 )
 
 
+# Find GDP column
+gdp_column = None
+
+for column in gdp_df.columns:
+
+    if (
+        "gdp" in column.lower()
+        and "capita" in column.lower()
+    ):
+        gdp_column = column
+        break
+
+
 countries = sorted(
     df["Country"].dropna().unique()
 )
@@ -528,25 +541,86 @@ elif page == "⚖️ Compare Countries":
     st.title("⚖️ Compare Countries")
 
     st.write(
-        "Compare life expectancy between three countries."
+        "Compare different indicators between three countries."
     )
+
+
+    # Choose variable
+    comparison = st.radio(
+        "What would you like to compare?",
+        [
+            "Life Expectancy",
+            "Health Spending",
+            "GDP per Capita"
+        ],
+        horizontal=True
+    )
+
+
+    # Choose dataset
+    if comparison == "Life Expectancy":
+
+        comparison_df = df.copy()
+
+        value_column = "Life Expectancy"
+
+    elif comparison == "Health Spending":
+
+        comparison_df = health_df.copy()
+
+        value_column = "Health Expenditure"
+
+    else:
+
+        comparison_df = gdp_df.copy()
+
+        value_column = gdp_column
+
+
+    # Check column
+    if value_column is None:
+
+        st.error(
+            "The selected data could not be found."
+        )
+
+        st.stop()
+
+
+    # Find available years
+    available_years = sorted(
+        comparison_df[
+            comparison_df[value_column].notna()
+        ]["Year"]
+        .dropna()
+        .unique()
+    )
+
+
+    if len(available_years) == 0:
+
+        st.error(
+            "No years are available for this selection."
+        )
+
+        st.stop()
 
 
     # Select year
     selected_year = st.selectbox(
         "Select Year",
-        years,
-        index=len(years) - 1
+        available_years,
+        index=len(available_years) - 1
     )
 
 
-    # Get data for selected year
-    comparison_data = df[
-        df["Year"] == selected_year
+    # Get countries for selected year
+    comparison_data = comparison_df[
+        comparison_df["Year"] == selected_year
     ].dropna(
         subset=[
             "Country",
-            "Life Expectancy"
+            value_column
         ]
     )
 
@@ -554,6 +628,16 @@ elif page == "⚖️ Compare Countries":
     available_countries = sorted(
         comparison_data["Country"].unique()
     )
+
+
+    if len(available_countries) < 3:
+
+        st.warning(
+            "There are not enough countries with "
+            "complete data for this year."
+        )
+
+        st.stop()
 
 
     # Select countries
@@ -612,28 +696,41 @@ elif page == "⚖️ Compare Countries":
     ]
 
 
+    # Get selected countries
     selected_data = comparison_data[
         comparison_data["Country"].isin(
             selected_countries
         )
-    ]
+    ].copy()
 
 
-    # Create comparison chart
+    # Keep selected order
+    selected_data["Country"] = pd.Categorical(
+        selected_data["Country"],
+        categories=selected_countries,
+        ordered=True
+    )
+
+    selected_data = selected_data.sort_values(
+        "Country"
+    )
+
+
+    # Create chart
     fig_compare = px.bar(
         selected_data,
         x="Country",
-        y="Life Expectancy",
-        text="Life Expectancy",
+        y=value_column,
+        text=value_column,
         category_orders={
             "Country": selected_countries
         },
         labels={
-            "Life Expectancy":
-                "Life Expectancy (years)"
+            value_column:
+                comparison
         },
         title=(
-            f"Life Expectancy Comparison — "
+            f"{comparison} Comparison — "
             f"{selected_year}"
         )
     )
