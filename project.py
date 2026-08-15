@@ -63,6 +63,15 @@ average_latest = latest_data[
 ].mean()
 
 
+highest_latest = latest_data.loc[
+    latest_data["Life Expectancy"].idxmax()
+]
+
+lowest_latest = latest_data.loc[
+    latest_data["Life Expectancy"].idxmin()
+]
+
+
 # Home page
 st.title("🌎 LifeLens")
 
@@ -80,6 +89,7 @@ col1, col2, col3, col4 = st.columns(4)
 
 
 with col1:
+
     st.metric(
         "Countries",
         len(countries)
@@ -87,6 +97,7 @@ with col1:
 
 
 with col2:
+
     st.metric(
         "Latest Year",
         latest_year
@@ -94,6 +105,7 @@ with col2:
 
 
 with col3:
+
     st.metric(
         "Global Average",
         f"{average_latest:.1f} years"
@@ -101,9 +113,39 @@ with col3:
 
 
 with col4:
+
     st.metric(
         "Years of Data",
         f"{int(years[-1] - years[0])}+"
+    )
+
+
+# Highest and lowest
+st.divider()
+
+st.subheader(
+    f"🌍 The World in {latest_year}"
+)
+
+
+col1, col2 = st.columns(2)
+
+
+with col1:
+
+    st.metric(
+        "🏆 Highest Life Expectancy",
+        f"{highest_latest['Life Expectancy']:.1f} years",
+        highest_latest["Country"]
+    )
+
+
+with col2:
+
+    st.metric(
+        "📉 Lowest Life Expectancy",
+        f"{lowest_latest['Life Expectancy']:.1f} years",
+        lowest_latest["Country"]
     )
 
 
@@ -113,6 +155,7 @@ st.divider()
 st.subheader(
     f"🏆 Top 10 Countries in {latest_year}"
 )
+
 
 top10 = latest_data.sort_values(
     "Life Expectancy",
