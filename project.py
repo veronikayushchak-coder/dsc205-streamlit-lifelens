@@ -118,10 +118,7 @@ st.sidebar.caption(
 )
 
 
-# =========================================================
-# HOME
-# =========================================================
-
+# Home
 if page == "🏠 Home":
 
     latest_year = int(years[-1])
@@ -246,12 +243,7 @@ if page == "🏠 Home":
         title=(
             f"Countries with the Highest "
             f"Life Expectancy — {latest_year}"
-        }
-    )
-
-    fig.update_layout(
-        xaxis_title="Life Expectancy (years)",
-        yaxis_title="Country"
+        )
     )
 
     st.plotly_chart(
@@ -265,10 +257,7 @@ if page == "🏠 Home":
     )
 
 
-# =========================================================
-# EXPLORE THE WORLD
-# =========================================================
-
+# Explore the World
 elif page == "🗺️ Explore the World":
 
     st.title("🗺️ Explore the World")
@@ -369,7 +358,9 @@ elif page == "🗺️ Explore the World":
 
     st.divider()
 
-    st.subheader("🏆 Country Rankings")
+    st.subheader(
+        "🏆 Country Rankings"
+    )
 
     ranking_choice = st.radio(
         "Show",
@@ -418,10 +409,7 @@ elif page == "🗺️ Explore the World":
     )
 
 
-# =========================================================
-# COUNTRY EXPLORER
-# =========================================================
-
+# Country Explorer
 elif page == "🔎 Country Explorer":
 
     st.title("🔎 Country Explorer")
@@ -617,10 +605,7 @@ elif page == "🔎 Country Explorer":
         )
 
 
-# =========================================================
-# COMPARE COUNTRIES
-# =========================================================
-
+# Compare Countries
 elif page == "⚖️ Compare Countries":
 
     st.title("⚖️ Compare Countries")
@@ -712,7 +697,9 @@ elif page == "⚖️ Compare Countries":
 
         st.stop()
 
-    st.subheader("🌎 Select Countries")
+    st.subheader(
+        "🌎 Select Countries"
+    )
 
     col1, col2, col3 = st.columns(3)
 
@@ -780,7 +767,9 @@ elif page == "⚖️ Compare Countries":
         "Country"
     )
 
-    st.subheader("📊 Comparison")
+    st.subheader(
+        "📊 Comparison"
+    )
 
     visualization = st.radio(
         "Choose visualization",
@@ -806,7 +795,8 @@ elif page == "⚖️ Compare Countries":
                     comparison
             },
             title=(
-                f"{comparison} — {selected_year}"
+                f"{comparison} — "
+                f"{selected_year}"
             )
         )
 
@@ -849,10 +839,7 @@ elif page == "⚖️ Compare Countries":
     )
 
 
-# =========================================================
-# RELATIONSHIPS
-# =========================================================
-
+# Relationships
 elif page == "🔬 Relationships":
 
     st.title("🔬 Relationships")
@@ -874,7 +861,6 @@ elif page == "🔬 Relationships":
         horizontal=True
     )
 
-    # GDP
     if factor == "GDP per Capita":
 
         relationship_years = sorted(
@@ -900,7 +886,6 @@ elif page == "🔬 Relationships":
 
         x_label = "GDP per Capita"
 
-    # Health spending
     else:
 
         health_data = health_df[
@@ -931,7 +916,9 @@ elif page == "🔬 Relationships":
         )
 
         relationship_years = sorted(
-            valid_health_years["Year"]
+            valid_health_years[
+                "Year"
+            ]
             .dropna()
             .unique()
         )
@@ -951,7 +938,6 @@ elif page == "🔬 Relationships":
 
         x_label = "Health Spending per Capita"
 
-    # Life expectancy data
     life_data = df[
         df["Year"] == selected_year
     ][
@@ -962,7 +948,6 @@ elif page == "🔬 Relationships":
         ]
     ]
 
-    # Combine datasets
     relationship_data = factor_data.merge(
         life_data,
         on=[
@@ -1005,7 +990,6 @@ elif page == "🔬 Relationships":
         use_container_width=True
     )
 
-    # Correlation
     if len(relationship_data) >= 2:
 
         correlation = relationship_data[
@@ -1015,7 +999,9 @@ elif page == "🔬 Relationships":
             ]
         ].corr().iloc[0, 1]
 
-        st.subheader("📊 Correlation")
+        st.subheader(
+            "📊 Correlation"
+        )
 
         st.metric(
             "Correlation",
