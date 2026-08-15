@@ -565,27 +565,32 @@ elif page == "⚖️ Compare Countries":
         country1 = st.selectbox(
             "Country 1",
             available_countries,
-            index=0
+            index=0,
+            key="country1"
         )
 
 
     with col2:
 
         country2_options = [
-            country for country in available_countries
+            country
+            for country in available_countries
             if country != country1
         ]
 
         country2 = st.selectbox(
             "Country 2",
-            country2_options
+            country2_options,
+            index=0,
+            key="country2"
         )
 
 
     with col3:
 
         country3_options = [
-            country for country in available_countries
+            country
+            for country in available_countries
             if country not in [
                 country1,
                 country2
@@ -594,7 +599,9 @@ elif page == "⚖️ Compare Countries":
 
         country3 = st.selectbox(
             "Country 3",
-            country3_options
+            country3_options,
+            index=0,
+            key="country3"
         )
 
 
