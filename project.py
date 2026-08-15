@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 
 # Page setup
@@ -104,6 +105,36 @@ with col4:
         "Years of Data",
         f"{int(years[-1] - years[0])}+"
     )
+
+
+# Top 10 countries
+st.divider()
+
+st.subheader(
+    f"🏆 Top 10 Countries in {latest_year}"
+)
+
+top10 = latest_data.sort_values(
+    "Life Expectancy",
+    ascending=False
+).head(10)
+
+
+fig = px.bar(
+    top10.sort_values("Life Expectancy"),
+    x="Life Expectancy",
+    y="Country",
+    orientation="h",
+    labels={
+        "Life Expectancy": "Life Expectancy (years)"
+    }
+)
+
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
 
 # Show data
