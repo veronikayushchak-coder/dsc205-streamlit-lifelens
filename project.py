@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 
-# Page configuration
+# Page setup
 st.set_page_config(
     page_title="LifeLens",
     page_icon="🌎",
@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 
-# Life expectancy dataset
+# Data URL
 LIFE_URL = (
     "https://raw.githubusercontent.com/"
     "veronikayushchak-coder/dsc205-streamlit-lifelens/"
@@ -18,17 +18,19 @@ LIFE_URL = (
 )
 
 
-# Load the data
+# Load data
 @st.cache_data
 def load_data():
+
     life = pd.read_csv(LIFE_URL)
+
     return life
 
 
 df = load_data()
 
 
-# Clean column names
+# Clean data
 df = df.rename(
     columns={
         "Entity": "Country",
@@ -37,7 +39,6 @@ df = df.rename(
 )
 
 
-# Get basic information from the data
 countries = sorted(
     df["Country"].dropna().unique()
 )
@@ -47,7 +48,21 @@ years = sorted(
 )
 
 
-# App title
+# Calculate statistics
+latest_year = int(years[-1])
+
+latest_data = df[
+    df["Year"] == latest_year
+].dropna(
+    subset=["Life Expectancy"]
+)
+
+average_latest = latest_data[
+    "Life Expectancy"
+].mean()
+
+
+# Home page
 st.title("🌎 LifeLens")
 
 st.subheader(
@@ -59,7 +74,44 @@ st.write(
 )
 
 
-# Preview the data
+# Show statistics
+col1, col2, col3, col4 = st.columns(4)
+
+
+with col1:
+    st.metric(
+        "Countries",
+        len(countries)
+    )
+
+
+with col2:
+    st.metric(
+        "Latest Year",
+        latest_year
+    )
+
+
+with col3:
+    st.metric(
+        "Global Average",
+        f"{average_latest:.1f} years"
+    )
+
+
+with col4:
+    st.metric(
+        "Years of Data",
+        f"{int(years[-1] - years[0])}+"
+    )
+
+
+# Show data
+st.divider()
+
+st.subheader("Data Preview")
+
 st.dataframe(
-    df.head(10)
+    df.head(10),
+    use_container_width=True
 )
