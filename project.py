@@ -144,7 +144,6 @@ if page == "🏠 Home":
         "Explore life expectancy around the world."
     )
 
-    # Show statistics
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
@@ -171,7 +170,6 @@ if page == "🏠 Home":
             f"{int(years[-1] - years[0])}+"
         )
 
-    # Highest and lowest
     st.divider()
 
     st.subheader(
@@ -194,7 +192,6 @@ if page == "🏠 Home":
             lowest_latest["Country"]
         )
 
-    # Top 10 countries
     st.divider()
 
     st.subheader(
@@ -232,14 +229,12 @@ elif page == "🗺️ Explore the World":
         "See how life expectancy differs around the world."
     )
 
-    # Select year
     selected_year = st.select_slider(
         "Select Year",
         options=years,
         value=years[-1]
     )
 
-    # Get data for selected year
     map_data = df[
         df["Year"] == selected_year
     ].dropna(
@@ -250,7 +245,6 @@ elif page == "🗺️ Explore the World":
         ]
     )
 
-    # Create map
     fig_map = px.choropleth(
         map_data,
         locations="Code",
@@ -279,7 +273,6 @@ elif page == "🗺️ Explore the World":
         use_container_width=True
     )
 
-    # Calculate statistics
     highest = map_data.loc[
         map_data["Life Expectancy"].idxmax()
     ]
@@ -292,7 +285,6 @@ elif page == "🗺️ Explore the World":
         "Life Expectancy"
     ].mean()
 
-    # Show statistics
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -331,7 +323,6 @@ elif page == "🔎 Country Explorer":
         "Select a country and explore its life expectancy history."
     )
 
-    # Select country
     selected_country = st.selectbox(
         "Select Country",
         countries
@@ -357,38 +348,56 @@ elif page == "🔎 Country Explorer":
             "Life Expectancy"
         ].max()
 
+        lowest = country_data[
+            "Life Expectancy"
+        ].min()
+
+        average = country_data[
+            "Life Expectancy"
+        ].mean()
+
         change = latest - first
 
-        # Show statistics
-        col1, col2, col3, col4 = st.columns(4)
+        # Country statistics
+        st.subheader(
+            f"📊 {selected_country} Snapshot"
+        )
+
+        col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
             st.metric(
-                "First Available",
-                f"{first:.1f} years"
+                "First",
+                f"{first:.1f}"
             )
 
         with col2:
             st.metric(
                 "Latest",
-                f"{latest:.1f} years"
+                f"{latest:.1f}"
             )
 
         with col3:
             st.metric(
-                "Total Change",
-                f"{change:+.1f} years"
+                "Change",
+                f"{change:+.1f}"
             )
 
         with col4:
             st.metric(
-                "Highest",
-                f"{highest:.1f} years"
+                "Average",
+                f"{average:.1f}"
             )
 
-        # Select time period
+        with col5:
+            st.metric(
+                "Highest",
+                f"{highest:.1f}"
+            )
+
         st.divider()
 
+        # Select time period
         st.subheader(
             "📈 Life Expectancy Over Time"
         )
@@ -429,7 +438,6 @@ elif page == "🔎 Country Explorer":
             )
         ]
 
-        # Create line chart
         fig_country = px.line(
             filtered_country,
             x="Year",
@@ -450,7 +458,9 @@ elif page == "🔎 Country Explorer":
             use_container_width=True
         )
 
-        # Find highest and lowest years
+        st.divider()
+
+        # Highest and lowest
         highest_row = country_data.loc[
             country_data["Life Expectancy"].idxmax()
         ]
@@ -477,6 +487,31 @@ elif page == "🔎 Country Explorer":
                 f"{int(lowest_row['Year'])}."
             )
 
+        st.divider()
+
+        # Data table
+        st.subheader(
+            "📋 Country Data"
+        )
+
+        table_data = country_data[
+            [
+                "Year",
+                "Life Expectancy"
+            ]
+        ].copy()
+
+        table_data["Life Expectancy"] = (
+            table_data["Life Expectancy"]
+            .round(1)
+        )
+
+        st.dataframe(
+            table_data,
+            use_container_width=True,
+            hide_index=True
+        )
+
 
 # Compare Countries
 elif page == "⚖️ Compare Countries":
@@ -487,7 +522,6 @@ elif page == "⚖️ Compare Countries":
         "Compare different indicators between three countries."
     )
 
-    # Choose variable
     comparison = st.radio(
         "What would you like to compare?",
         [
@@ -498,7 +532,6 @@ elif page == "⚖️ Compare Countries":
         horizontal=True
     )
 
-    # Choose dataset
     if comparison == "Life Expectancy":
 
         comparison_df = df.copy()
@@ -514,7 +547,6 @@ elif page == "⚖️ Compare Countries":
         comparison_df = gdp_df.copy()
         value_column = gdp_column
 
-    # Check column
     if value_column is None:
 
         st.error(
@@ -523,7 +555,6 @@ elif page == "⚖️ Compare Countries":
 
         st.stop()
 
-    # Find available years
     available_years = sorted(
         comparison_df[
             comparison_df[value_column].notna()
@@ -540,14 +571,12 @@ elif page == "⚖️ Compare Countries":
 
         st.stop()
 
-    # Select year
     selected_year = st.selectbox(
         "Select Year",
         available_years,
         index=len(available_years) - 1
     )
 
-    # Get countries for selected year
     comparison_data = comparison_df[
         comparison_df["Year"] == selected_year
     ].dropna(
@@ -570,7 +599,6 @@ elif page == "⚖️ Compare Countries":
 
         st.stop()
 
-    # Select countries
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -621,14 +649,12 @@ elif page == "⚖️ Compare Countries":
         country3
     ]
 
-    # Get selected countries
     selected_data = comparison_data[
         comparison_data["Country"].isin(
             selected_countries
         )
     ].copy()
 
-    # Keep selected order
     selected_data["Country"] = pd.Categorical(
         selected_data["Country"],
         categories=selected_countries,
@@ -639,7 +665,6 @@ elif page == "⚖️ Compare Countries":
         "Country"
     )
 
-    # Choose chart
     visualization = st.radio(
         "Choose visualization",
         [
@@ -649,7 +674,6 @@ elif page == "⚖️ Compare Countries":
         horizontal=True
     )
 
-    # Create chart
     if visualization == "Bar Chart":
 
         fig_compare = px.bar(
@@ -688,11 +712,6 @@ elif page == "⚖️ Compare Countries":
             y="Country",
             orientation="h",
             text=value_column,
-            category_orders={
-                "Country": list(
-                    ranking_data["Country"]
-                )
-            },
             labels={
                 value_column:
                     comparison
@@ -724,8 +743,6 @@ elif page == "🔬 Relationships":
         "may relate to life expectancy."
     )
 
-
-    # Choose factor
     factor = st.radio(
         "Choose a factor",
         [
@@ -735,8 +752,6 @@ elif page == "🔬 Relationships":
         horizontal=True
     )
 
-
-    # GDP relationship
     if factor == "GDP per Capita":
 
         relationship_years = sorted(
@@ -762,8 +777,6 @@ elif page == "🔬 Relationships":
 
         x_label = "GDP per Capita"
 
-
-    # Health relationship
     else:
 
         relationship_years = sorted(
@@ -789,8 +802,6 @@ elif page == "🔬 Relationships":
 
         x_label = "Health Spending per Capita"
 
-
-    # Get life expectancy
     life_data = df[
         df["Year"] == selected_year
     ][
@@ -801,8 +812,6 @@ elif page == "🔬 Relationships":
         ]
     ]
 
-
-    # Combine data
     relationship_data = factor_data.merge(
         life_data,
         on=[
@@ -812,8 +821,6 @@ elif page == "🔬 Relationships":
         how="inner"
     )
 
-
-    # Remove missing values
     relationship_data = relationship_data.dropna(
         subset=[
             factor_column,
@@ -821,8 +828,6 @@ elif page == "🔬 Relationships":
         ]
     )
 
-
-    # Create scatterplot
     fig_relationship = px.scatter(
         relationship_data,
         x=factor_column,
@@ -840,14 +845,11 @@ elif page == "🔬 Relationships":
         )
     )
 
-
     st.plotly_chart(
         fig_relationship,
         use_container_width=True
     )
 
-
-    # Calculate correlation
     if len(relationship_data) >= 2:
 
         correlation = relationship_data[
@@ -857,12 +859,10 @@ elif page == "🔬 Relationships":
             ]
         ].corr().iloc[0, 1]
 
-
         st.metric(
             "Correlation",
             f"{correlation:.2f}"
         )
-
 
         if correlation >= 0.7:
 
@@ -887,7 +887,6 @@ elif page == "🔬 Relationships":
             st.warning(
                 "Negative relationship."
             )
-
 
         st.caption(
             "Correlation shows association, not causation."
