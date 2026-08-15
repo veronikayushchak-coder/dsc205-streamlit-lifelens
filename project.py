@@ -28,6 +28,25 @@ def load_data():
 df = load_data()
 
 
+# Clean column names
+df = df.rename(
+    columns={
+        "Entity": "Country",
+        "Life expectancy": "Life Expectancy"
+    }
+)
+
+
+# Get basic information from the data
+countries = sorted(
+    df["Country"].dropna().unique()
+)
+
+years = sorted(
+    df["Year"].dropna().unique()
+)
+
+
 # App title
 st.title("🌎 LifeLens")
 
