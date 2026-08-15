@@ -49,143 +49,195 @@ years = sorted(
 )
 
 
-# Calculate statistics
-latest_year = int(years[-1])
+# Sidebar
+st.sidebar.title("🌎 LifeLens")
 
-latest_data = df[
-    df["Year"] == latest_year
-].dropna(
-    subset=["Life Expectancy"]
-)
-
-average_latest = latest_data[
-    "Life Expectancy"
-].mean()
-
-
-highest_latest = latest_data.loc[
-    latest_data["Life Expectancy"].idxmax()
-]
-
-lowest_latest = latest_data.loc[
-    latest_data["Life Expectancy"].idxmin()
-]
-
-
-# Home page
-st.title("🌎 LifeLens")
-
-st.subheader(
+st.sidebar.write(
     "Understanding how the world lives."
 )
 
-st.write(
-    "Explore life expectancy around the world."
+st.sidebar.divider()
+
+page = st.sidebar.radio(
+    "Navigate",
+    [
+        "🏠 Home",
+        "🗺️ Explore the World",
+        "🔎 Country Explorer",
+        "⚖️ Compare Countries",
+        "🔬 Relationships"
+    ]
 )
 
 
-# Show statistics
-col1, col2, col3, col4 = st.columns(4)
+# Home page
+if page == "🏠 Home":
+
+    latest_year = int(years[-1])
+
+    latest_data = df[
+        df["Year"] == latest_year
+    ].dropna(
+        subset=["Life Expectancy"]
+    )
+
+    average_latest = latest_data[
+        "Life Expectancy"
+    ].mean()
+
+    highest_latest = latest_data.loc[
+        latest_data["Life Expectancy"].idxmax()
+    ]
+
+    lowest_latest = latest_data.loc[
+        latest_data["Life Expectancy"].idxmin()
+    ]
 
 
-with col1:
+    st.title("🌎 LifeLens")
 
-    st.metric(
-        "Countries",
-        len(countries)
+    st.subheader(
+        "Understanding how the world lives."
+    )
+
+    st.write(
+        "Explore life expectancy around the world."
     )
 
 
-with col2:
+    # Show statistics
+    col1, col2, col3, col4 = st.columns(4)
 
-    st.metric(
-        "Latest Year",
-        latest_year
+
+    with col1:
+
+        st.metric(
+            "Countries",
+            len(countries)
+        )
+
+
+    with col2:
+
+        st.metric(
+            "Latest Year",
+            latest_year
+        )
+
+
+    with col3:
+
+        st.metric(
+            "Global Average",
+            f"{average_latest:.1f} years"
+        )
+
+
+    with col4:
+
+        st.metric(
+            "Years of Data",
+            f"{int(years[-1] - years[0])}+"
+        )
+
+
+    # Highest and lowest
+    st.divider()
+
+    st.subheader(
+        f"🌍 The World in {latest_year}"
     )
 
 
-with col3:
+    col1, col2 = st.columns(2)
 
-    st.metric(
-        "Global Average",
-        f"{average_latest:.1f} years"
+
+    with col1:
+
+        st.metric(
+            "🏆 Highest Life Expectancy",
+            f"{highest_latest['Life Expectancy']:.1f} years",
+            highest_latest["Country"]
+        )
+
+
+    with col2:
+
+        st.metric(
+            "📉 Lowest Life Expectancy",
+            f"{lowest_latest['Life Expectancy']:.1f} years",
+            lowest_latest["Country"]
+        )
+
+
+    # Top 10 countries
+    st.divider()
+
+    st.subheader(
+        f"🏆 Top 10 Countries in {latest_year}"
     )
 
 
-with col4:
+    top10 = latest_data.sort_values(
+        "Life Expectancy",
+        ascending=False
+    ).head(10)
 
-    st.metric(
-        "Years of Data",
-        f"{int(years[-1] - years[0])}+"
+
+    fig = px.bar(
+        top10.sort_values("Life Expectancy"),
+        x="Life Expectancy",
+        y="Country",
+        orientation="h",
+        labels={
+            "Life Expectancy":
+                "Life Expectancy (years)"
+        }
     )
 
 
-# Highest and lowest
-st.divider()
-
-st.subheader(
-    f"🌍 The World in {latest_year}"
-)
-
-
-col1, col2 = st.columns(2)
-
-
-with col1:
-
-    st.metric(
-        "🏆 Highest Life Expectancy",
-        f"{highest_latest['Life Expectancy']:.1f} years",
-        highest_latest["Country"]
+    st.plotly_chart(
+        fig,
+        use_container_width=True
     )
 
 
-with col2:
+# Explore the World
+elif page == "🗺️ Explore the World":
 
-    st.metric(
-        "📉 Lowest Life Expectancy",
-        f"{lowest_latest['Life Expectancy']:.1f} years",
-        lowest_latest["Country"]
+    st.title("🗺️ Explore the World")
+
+    st.write(
+        "See how life expectancy differs around the world."
     )
 
 
-# Top 10 countries
-st.divider()
+# Country Explorer
+elif page == "🔎 Country Explorer":
 
-st.subheader(
-    f"🏆 Top 10 Countries in {latest_year}"
-)
+    st.title("🔎 Country Explorer")
 
-
-top10 = latest_data.sort_values(
-    "Life Expectancy",
-    ascending=False
-).head(10)
+    st.write(
+        "Explore life expectancy for an individual country."
+    )
 
 
-fig = px.bar(
-    top10.sort_values("Life Expectancy"),
-    x="Life Expectancy",
-    y="Country",
-    orientation="h",
-    labels={
-        "Life Expectancy": "Life Expectancy (years)"
-    }
-)
+# Compare Countries
+elif page == "⚖️ Compare Countries":
+
+    st.title("⚖️ Compare Countries")
+
+    st.write(
+        "Compare life expectancy between countries."
+    )
 
 
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
+# Relationships
+elif page == "🔬 Relationships":
 
+    st.title("🔬 Relationships")
 
-# Show data
-st.divider()
-
-st.subheader("Data Preview")
-
-st.dataframe(
-    df.head(10),
-    use_container_width=True
-)
+    st.write(
+        "Explore relationships between life expectancy, "
+        "GDP, and health spending."
+    )
