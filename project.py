@@ -320,8 +320,178 @@ elif page == "🔎 Country Explorer":
     st.title("🔎 Country Explorer")
 
     st.write(
-        "Explore life expectancy for an individual country."
+        "Select a country and explore its life expectancy history."
     )
+
+
+    # Select country
+    selected_country = st.selectbox(
+        "Select Country",
+        countries
+    )
+
+
+    country_data = df[
+        df["Country"] == selected_country
+    ].dropna(
+        subset=["Life Expectancy"]
+    ).sort_values("Year")
+
+
+    if not country_data.empty:
+
+        first = country_data[
+            "Life Expectancy"
+        ].iloc[0]
+
+        latest = country_data[
+            "Life Expectancy"
+        ].iloc[-1]
+
+        highest = country_data[
+            "Life Expectancy"
+        ].max()
+
+        change = latest - first
+
+
+        # Show statistics
+        col1, col2, col3, col4 = st.columns(4)
+
+
+        with col1:
+
+            st.metric(
+                "First Available",
+                f"{first:.1f} years"
+            )
+
+
+        with col2:
+
+            st.metric(
+                "Latest",
+                f"{latest:.1f} years"
+            )
+
+
+        with col3:
+
+            st.metric(
+                "Total Change",
+                f"{change:+.1f} years"
+            )
+
+
+        with col4:
+
+            st.metric(
+                "Highest",
+                f"{highest:.1f} years"
+            )
+
+
+        # Select time period
+        st.divider()
+
+        st.subheader(
+            "📈 Life Expectancy Over Time"
+        )
+
+
+        min_year = int(
+            country_data["Year"].min()
+        )
+
+        max_year = int(
+            country_data["Year"].max()
+        )
+
+
+        if min_year < max_year:
+
+            year_range = st.slider(
+                "Choose time period",
+                min_year,
+                max_year,
+                (min_year, max_year)
+            )
+
+        else:
+
+            year_range = (
+                min_year,
+                max_year
+            )
+
+
+        filtered_country = country_data[
+            (
+                country_data["Year"]
+                >= year_range[0]
+            )
+            &
+            (
+                country_data["Year"]
+                <= year_range[1]
+            )
+        ]
+
+
+        # Create line chart
+        fig_country = px.line(
+            filtered_country,
+            x="Year",
+            y="Life Expectancy",
+            markers=True,
+            labels={
+                "Life Expectancy":
+                    "Life Expectancy (years)"
+            },
+            title=(
+                f"Life Expectancy — "
+                f"{selected_country}"
+            )
+        )
+
+
+        st.plotly_chart(
+            fig_country,
+            use_container_width=True
+        )
+
+
+        # Find highest and lowest years
+        highest_row = country_data.loc[
+            country_data["Life Expectancy"].idxmax()
+        ]
+
+        lowest_row = country_data.loc[
+            country_data["Life Expectancy"].idxmin()
+        ]
+
+
+        col1, col2 = st.columns(2)
+
+
+        with col1:
+
+            st.info(
+                f"🏆 Highest: "
+                f"{highest_row['Life Expectancy']:.1f} "
+                f"years in "
+                f"{int(highest_row['Year'])}."
+            )
+
+
+        with col2:
+
+            st.info(
+                f"📉 Lowest: "
+                f"{lowest_row['Life Expectancy']:.1f} "
+                f"years in "
+                f"{int(lowest_row['Year'])}."
+            )
 
 
 # Compare Countries
