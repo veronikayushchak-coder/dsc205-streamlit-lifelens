@@ -720,35 +720,77 @@ elif page == "🔬 Relationships":
     st.title("🔬 Relationships")
 
     st.write(
-        "Explore how economic factors may relate "
-        "to life expectancy."
+        "Explore how economic and healthcare factors "
+        "may relate to life expectancy."
     )
 
 
-    # Select year
-    relationship_years = sorted(
-        gdp_df[
-            gdp_df[gdp_column].notna()
-        ]["Year"]
-        .dropna()
-        .unique()
+    # Choose factor
+    factor = st.radio(
+        "Choose a factor",
+        [
+            "GDP per Capita",
+            "Health Spending"
+        ],
+        horizontal=True
     )
 
 
-    selected_year = st.selectbox(
-        "Select Year",
-        relationship_years,
-        index=len(relationship_years) - 1
-    )
+    # GDP relationship
+    if factor == "GDP per Capita":
+
+        relationship_years = sorted(
+            gdp_df[
+                gdp_df[gdp_column].notna()
+            ]["Year"]
+            .dropna()
+            .unique()
+        )
+
+        selected_year = st.selectbox(
+            "Select Year",
+            relationship_years,
+            index=len(relationship_years) - 1,
+            key="gdp_year"
+        )
+
+        factor_data = gdp_df[
+            gdp_df["Year"] == selected_year
+        ].copy()
+
+        factor_column = gdp_column
+
+        x_label = "GDP per Capita"
 
 
-    # Get GDP data
-    gdp_data = gdp_df[
-        gdp_df["Year"] == selected_year
-    ].copy()
+    # Health relationship
+    else:
+
+        relationship_years = sorted(
+            health_df[
+                health_df["Health Expenditure"].notna()
+            ]["Year"]
+            .dropna()
+            .unique()
+        )
+
+        selected_year = st.selectbox(
+            "Select Year",
+            relationship_years,
+            index=len(relationship_years) - 1,
+            key="health_year"
+        )
+
+        factor_data = health_df[
+            health_df["Year"] == selected_year
+        ].copy()
+
+        factor_column = "Health Expenditure"
+
+        x_label = "Health Spending per Capita"
 
 
-    # Get life expectancy data
+    # Get life expectancy
     life_data = df[
         df["Year"] == selected_year
     ][
@@ -760,8 +802,8 @@ elif page == "🔬 Relationships":
     ]
 
 
-    # Combine datasets
-    relationship_data = gdp_data.merge(
+    # Combine data
+    relationship_data = factor_data.merge(
         life_data,
         on=[
             "Country",
@@ -774,7 +816,7 @@ elif page == "🔬 Relationships":
     # Remove missing values
     relationship_data = relationship_data.dropna(
         subset=[
-            gdp_column,
+            factor_column,
             "Life Expectancy"
         ]
     )
@@ -783,18 +825,18 @@ elif page == "🔬 Relationships":
     # Create scatterplot
     fig_relationship = px.scatter(
         relationship_data,
-        x=gdp_column,
+        x=factor_column,
         y="Life Expectancy",
         hover_name="Country",
         labels={
-            gdp_column:
-                "GDP per Capita",
+            factor_column:
+                x_label,
             "Life Expectancy":
                 "Life Expectancy (years)"
         },
         title=(
-            f"Life Expectancy vs GDP per Capita — "
-            f"{selected_year}"
+            f"Life Expectancy vs "
+            f"{x_label} — {selected_year}"
         )
     )
 
@@ -810,7 +852,7 @@ elif page == "🔬 Relationships":
 
         correlation = relationship_data[
             [
-                gdp_column,
+                factor_column,
                 "Life Expectancy"
             ]
         ].corr().iloc[0, 1]
