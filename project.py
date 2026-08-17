@@ -68,17 +68,8 @@ health_df = health_df.rename(
 )
 
 
-# Find GDP column
-gdp_column = None
-
-for column in gdp_df.columns:
-
-    if (
-        "gdp" in column.lower()
-        and "capita" in column.lower()
-    ):
-        gdp_column = column
-        break
+# GDP column
+gdp_column = "GDP per capita"
 
 
 # Basic information
